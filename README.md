@@ -41,14 +41,19 @@ of the box).
 ## Prerequisites
 
 - An AWS account
+- A scoped deploy profile — one-time IAM setup in [docs/setup.md](docs/setup.md)
 - [AWS CLI v2](https://aws.amazon.com/cli/)
-- [`jq`](https://jqlang.github.io/jq/) (`brew install jq`)
+- [`jq`](https://jqlang.github.io/jq/) (`brew install jq`) — used to build and
+  edit the JSON the AWS CLI sends for CloudFront and the bucket policy
 
 ## Quick start
 
+First, complete the one-time scoped-profile setup in
+[docs/setup.md](docs/setup.md), then:
+
 ```bash
-# 1. One-time: create a scoped deploy profile (see docs/setup.md)
-#    This gives Claude Code credentials limited to S3 + CloudFront for this project.
+# 1. Create the scoped deploy profile (see docs/setup.md) — limits Claude Code's
+#    credentials to S3 + CloudFront for this project.
 
 # 2. Configure the project
 cp config.example.sh config.sh
