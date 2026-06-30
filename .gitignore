@@ -1,0 +1,7 @@
+# Local config and deployment state — never commit these.
+config.sh
+.deploy-state
+
+# OS / editor noise
+.DS_Store
+*.swp
