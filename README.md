@@ -1,27 +1,17 @@
 # aws-claude-code-static-site-starter
 
-Move a prototype from `localhost` to a shareable HTTPS URL in minutes — using
-Claude Code and the AWS CLI.
+A minimal starter for taking a prototype from `localhost` to a shareable HTTPS
+URL with Claude Code and the AWS CLI — a private S3 bucket served over
+CloudFront, deployed in minutes.
 
 ```text
 Claude Code  →  AWS CLI  →  Amazon S3 (private)  →  Amazon CloudFront (HTTPS)
 ```
 
-When you're building an idea with AI, you want to spend less time configuring
-infrastructure and more time iterating. With a bit of one-time setup and a
-**scoped AWS CLI profile**, Claude Code can build a site and deploy the AWS
-resources for it in minutes.
-
-**The result:**
-
-- Prompt → live URL in minutes
-- Static assets hosted in Amazon S3 (private bucket, no public access)
-- HTTPS delivery through Amazon CloudFront
-- Edge caching near your users
-- Often pennies per month for simple sites
-
-Good enough for demos, landing pages, internal tools, and proof-of-concept
-projects — enough to make an idea real and shareable.
+With a bit of one-time setup and a **scoped AWS CLI profile**, Claude Code can
+build a site and deploy the AWS resources for it — HTTPS, edge caching, and
+often pennies per month. Good enough for demos, landing pages, internal tools,
+and proof-of-concept projects.
 
 ---
 
