@@ -167,7 +167,16 @@ can fall in the AWS Free Tier. Always check current AWS pricing for your usage.
 
 ## How it works
 
-1. **S3 bucket** is created private, with Block Public Access fully on.
+Every step below is a plain AWS CLI command (`aws s3 ...`, `aws cloudfront ...`)
+issued by [`scripts/deploy.sh`](scripts/deploy.sh) under whatever profile your
+config selects. If you set up the optional scoped profile, the CLI authenticates
+as that IAM user via `AWS_PROFILE`, so each `aws` call is signed with
+credentials that can only act on this project's S3 and CloudFront resources —
+nothing in the scripts runs outside that boundary.
+
+1. **S3 bucket** is created private, with S3 Block Public Access fully enabled.
+   This is AWS's recommended best practice — the bucket is never directly
+   reachable from the internet; only CloudFront can read from it (step 2).
 2. A **CloudFront Origin Access Control (OAC)** lets only CloudFront read it.
 3. A **CloudFront distribution** serves the bucket over HTTPS, redirects HTTP
    to HTTPS, compresses responses, and uses the AWS-managed CachingOptimized
