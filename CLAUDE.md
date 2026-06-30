@@ -29,7 +29,8 @@ The site is hosted in a private S3 bucket and served through CloudFront with
   files and invalidates the cache — it does not recreate infrastructure.
 - **Never commit** `config.sh` or `.deploy-state` (already in `.gitignore`).
 - **Use the scoped profile.** Deploys should run through the `AWS_PROFILE` set
-  in `config.sh`, not account-admin credentials. See `docs/setup.md`.
+  in `config.sh`, not account-admin credentials. See the "Scoped deploy
+  profile" section in `README.md`.
 - **Prereqs:** AWS CLI v2 and `jq` must be installed.
 
 ## Guardrails

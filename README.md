@@ -34,23 +34,23 @@ of the box).
 │   └── _common.sh         # shared helpers
 ├── iam/deploy-policy.json # least-privilege policy for the deploy profile
 ├── config.example.sh      # copy to config.sh
-├── CLAUDE.md              # guidance for Claude Code
-└── docs/setup.md          # scoped AWS CLI profile setup
+└── CLAUDE.md              # guidance for Claude Code
 ```
 
 ## Prerequisites
 
-- An AWS account
-- A scoped deploy profile — one-time IAM setup in [docs/setup.md](docs/setup.md)
+- An AWS account, with credentials the AWS CLI can use (a scoped deploy profile
+  is recommended — see [Scoped deploy profile (optional)](#scoped-deploy-profile-optional))
 - [AWS CLI v2](https://aws.amazon.com/cli/)
 - [`jq`](https://jqlang.github.io/jq/) (`brew install jq`) — used to build and
   edit the JSON the AWS CLI sends for CloudFront and the bucket policy
 
 ## Quick start
 
-1. **Create the scoped deploy profile** (one-time) by following
-   [docs/setup.md](docs/setup.md). This limits Claude Code's credentials to S3
-   and CloudFront for this project.
+1. **Set up AWS credentials.** Any credentials the AWS CLI can use will work.
+   Recommended: a scoped deploy profile that limits Claude Code to S3 and
+   CloudFront for this project — see
+   [Scoped deploy profile (optional)](#scoped-deploy-profile-optional).
 
 2. **Configure the project** — copy the example config and set `PROJECT_NAME`,
    `AWS_REGION`, and `AWS_PROFILE`:
@@ -91,12 +91,73 @@ in the git-ignored `.deploy-state` file) and just pushes the new files.
 This disables the distribution, waits for CloudFront to propagate (5–15 min —
 that's normal), then deletes the distribution, OAC, and bucket.
 
-## Why a scoped profile?
+## Scoped deploy profile (optional)
 
-So you can hand the keys to an AI agent without handing over your account. The
-[`iam/deploy-policy.json`](iam/deploy-policy.json) policy only allows S3 actions
-on `my-static-site-*` buckets plus the CloudFront actions these scripts need.
-Full walkthrough in [docs/setup.md](docs/setup.md).
+The scripts work with whatever credentials the AWS CLI is configured to use. But
+the point of this starter is that you (and Claude Code) can deploy with
+credentials that can **only** touch S3 and CloudFront for this project — not
+your whole AWS account. This one-time setup creates that scoped profile.
+
+### 1. Create an IAM user with the scoped policy
+
+The policy lives at [`iam/deploy-policy.json`](iam/deploy-policy.json). It allows:
+
+- `sts:GetCallerIdentity` — so the script can find your account ID
+- S3 actions, limited to buckets named `my-static-site-*`
+- CloudFront actions needed to create/update/delete a distribution + OAC
+
+> **Heads up:** the S3 resource ARNs are hard-coded to the `my-static-site-*`
+> prefix. If you change `PROJECT_NAME` in your config, update the two
+> `arn:aws:s3:::my-static-site-*` lines in the policy to match.
+>
+> CloudFront actions can't be scoped to a single distribution at create time,
+> so those are `"Resource": "*"`. That's expected and is still far narrower
+> than account-wide admin.
+
+```bash
+aws iam create-policy \
+  --policy-name static-site-deployer \
+  --policy-document file://iam/deploy-policy.json
+
+aws iam create-user --user-name static-site-deployer
+
+aws iam attach-user-policy \
+  --user-name static-site-deployer \
+  --policy-arn "arn:aws:iam::<YOUR_ACCOUNT_ID>:policy/static-site-deployer"
+
+aws iam create-access-key --user-name static-site-deployer
+```
+
+That last command prints an `AccessKeyId` and `SecretAccessKey`. Save them for
+the next step.
+
+### 2. Store the credentials as a named CLI profile
+
+```bash
+aws configure --profile static-site-deployer
+# AWS Access Key ID:     <from step 1>
+# AWS Secret Access Key: <from step 1>
+# Default region name:   us-east-1
+# Default output format:  json
+```
+
+### 3. Point the project at that profile
+
+Set `AWS_PROFILE="static-site-deployer"` in your `config.sh`. Now
+`./scripts/deploy.sh` only ever acts through that scoped profile — if you let
+Claude Code run the deploy, the blast radius is limited to this project's S3
+buckets and CloudFront distributions.
+
+### Cleaning up the IAM bits later
+
+```bash
+aws iam list-access-keys --user-name static-site-deployer   # find the key id
+aws iam delete-access-key --user-name static-site-deployer --access-key-id <id>
+aws iam detach-user-policy --user-name static-site-deployer \
+  --policy-arn "arn:aws:iam::<YOUR_ACCOUNT_ID>:policy/static-site-deployer"
+aws iam delete-user --user-name static-site-deployer
+aws iam delete-policy --policy-arn "arn:aws:iam::<YOUR_ACCOUNT_ID>:policy/static-site-deployer"
+```
 
 ## Cost
 
