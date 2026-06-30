@@ -48,24 +48,27 @@ of the box).
 
 ## Quick start
 
-First, complete the one-time scoped-profile setup in
-[docs/setup.md](docs/setup.md), then:
+1. **Create the scoped deploy profile** (one-time) by following
+   [docs/setup.md](docs/setup.md). This limits Claude Code's credentials to S3
+   and CloudFront for this project.
 
-```bash
-# 1. Create the scoped deploy profile (see docs/setup.md) — limits Claude Code's
-#    credentials to S3 + CloudFront for this project.
+2. **Configure the project** — copy the example config and set `PROJECT_NAME`,
+   `AWS_REGION`, and `AWS_PROFILE`:
 
-# 2. Configure the project
-cp config.example.sh config.sh
-#    edit config.sh: set PROJECT_NAME, AWS_REGION, AWS_PROFILE
+   ```bash
+   cp config.example.sh config.sh
+   ```
 
-# 3. Deploy
-./scripts/deploy.sh
-#    prints:  https://d1234abcd.cloudfront.net
-```
+3. **Deploy:**
 
-First deploy provisions the bucket, OAC, distribution, and bucket policy, then
-uploads `site/`. CloudFront takes a few minutes to propagate worldwide the
+   ```bash
+   ./scripts/deploy.sh
+   ```
+
+   It prints your live URL, e.g. `https://d1234abcd.cloudfront.net`.
+
+The first deploy provisions the bucket, OAC, distribution, and bucket policy,
+then uploads `site/`. CloudFront takes a few minutes to propagate worldwide the
 first time — if the URL errors at first, wait a moment and retry.
 
 ## Update your site
